@@ -79,9 +79,6 @@ export default function OtpForm({ email, onEditEmail }: Props) {
     const nextOtp = storedEmail === email.toLowerCase().trim() ? storedOtp : ''
 
     setDevOtp(nextOtp)
-    if (nextOtp.length === OTP_LENGTH) {
-      setOtpDigits(nextOtp.split(''))
-    }
   }, [email])
 
   useEffect(() => {
@@ -193,9 +190,6 @@ export default function OtpForm({ email, onEditEmail }: Props) {
           sessionStorage.setItem(DEV_OTP_KEY, data.otp)
           sessionStorage.setItem(DEV_OTP_EMAIL_KEY, email.toLowerCase().trim())
           setDevOtp(data.otp)
-          if (data.otp.length === OTP_LENGTH) {
-            setOtpDigits(data.otp.split(''))
-          }
         }
 
         if (timerRef.current) clearTimeout(timerRef.current)
