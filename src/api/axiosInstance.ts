@@ -4,11 +4,31 @@ import { clearAuthTokens, getAuthTokens, setAuthTokens } from './tokenVault'
 
 const RAW_API_BASE_URL = import.meta.env.VITE_API_URL
 const DEFAULT_API_BASE_URL = 'https://delexpress-backend.onrender.com/api'
-const API_BASE_URL = (() => {
-  const base = (RAW_API_BASE_URL || DEFAULT_API_BASE_URL).replace(/\/+$/, '')
-  if (base.endsWith('/api') || base.includes('/api/')) return base
-  return `${base}/api`
-})()
+
+const getApiBaseUrl = () => {
+  const fallback = DEFAULT_API_BASE_URL.replace(/\/+$/, '')
+
+  try {
+    if (!RAW_API_BASE_URL) return fallback
+
+    const candidate = new URL(RAW_API_BASE_URL, window.location.origin)
+    const currentHost = window.location.hostname
+    const isNetlifyHost = currentHost.endsWith('netlify.app')
+    const pointsBackToFrontend = candidate.hostname === currentHost
+
+    if (isNetlifyHost && pointsBackToFrontend) {
+      return fallback
+    }
+
+    const normalized = candidate.href.replace(/\/+$/, '')
+    if (normalized.endsWith('/api') || normalized.includes('/api/')) return normalized
+    return `${normalized}/api`
+  } catch {
+    return fallback
+  }
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 const api = axios.create({
   baseURL: API_BASE_URL,

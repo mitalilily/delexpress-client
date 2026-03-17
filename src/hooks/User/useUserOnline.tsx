@@ -1,21 +1,53 @@
-import { io } from 'socket.io-client'
+import { io, type Socket } from 'socket.io-client'
 
-const SOCKET_URL = import.meta.env.VITE_APP_SOCKET_URL || 'https://delexpress-backend.onrender.com'
-const socket = io(SOCKET_URL!, { transports: ['websocket', 'polling'] })
+const DEFAULT_SOCKET_URL = 'https://delexpress-backend.onrender.com'
+
+const getSocketUrl = () => {
+  const rawSocketUrl = import.meta.env.VITE_APP_SOCKET_URL
+
+  try {
+    if (!rawSocketUrl) return DEFAULT_SOCKET_URL
+
+    const candidate = new URL(rawSocketUrl, window.location.origin)
+    const currentHost = window.location.hostname
+    const isNetlifyHost = currentHost.endsWith('netlify.app')
+    const pointsBackToFrontend = candidate.hostname === currentHost
+
+    if (isNetlifyHost && pointsBackToFrontend) {
+      return DEFAULT_SOCKET_URL
+    }
+
+    return candidate.origin
+  } catch {
+    return DEFAULT_SOCKET_URL
+  }
+}
+
+let socket: Socket | null = null
+
+const getSocket = () => {
+  if (!socket) {
+    socket = io(getSocketUrl(), { transports: ['websocket', 'polling'] })
+  }
+
+  return socket
+}
 
 let pingInterval: number | null = null
 
 export const registerUserSocket = (user: { id: string; role: string }) => {
   if (user.role !== 'employee') return
 
-  socket.emit('register', user.id)
+  const socketClient = getSocket()
+
+  socketClient.emit('register', user.id)
 
   // Ping every 10 seconds to maintain online status
   pingInterval = window.setInterval(() => {
-    socket.emit('employee_ping', user.id)
+    socketClient.emit('employee_ping', user.id)
   }, 10000)
 
-  socket.on('new_notification', (msg) => {
+  socketClient.on('new_notification', (msg) => {
     console.log('Received notification:', msg)
   })
 }
@@ -25,7 +57,11 @@ export const disconnectSocket = () => {
     clearInterval(pingInterval)
     pingInterval = null
   }
-  socket.disconnect()
+
+  if (socket) {
+    socket.disconnect()
+    socket = null
+  }
 }
 
-export default socket
+export default getSocket

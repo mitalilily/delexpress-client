@@ -98,14 +98,16 @@ export default function PhoneForm() {
 
       setPreferredLoginMethod('phone')
       sessionStorage.setItem('preferredMethod', 'phone')
+      sessionStorage.removeItem(DEV_OTP_KEY)
+      sessionStorage.removeItem(DEV_OTP_EMAIL_KEY)
 
       sendOtpRequest(email.toLowerCase().trim(), {
         onSuccess: (data) => {
-          if (import.meta.env.DEV && typeof data?.otp === 'string') {
+          if (typeof data?.otp === 'string') {
             sessionStorage.setItem(DEV_OTP_KEY, data.otp)
             sessionStorage.setItem(DEV_OTP_EMAIL_KEY, email.toLowerCase().trim())
             toast.open({
-              message: `Dev OTP: ${data.otp}`,
+              message: `Verification code: ${data.otp}`,
               severity: 'info',
               position: { vertical: 'top', horizontal: 'center' },
             })
@@ -249,7 +251,7 @@ export default function PhoneForm() {
         }}
       >
         <ToggleButton value="phone">One-Time Passcode</ToggleButton>
-        <ToggleButton value="password">Static Password</ToggleButton>
+        <ToggleButton value="password">Email + Password</ToggleButton>
       </ToggleButtonGroup>
 
       {preferredLoginMethod === 'phone' ? (

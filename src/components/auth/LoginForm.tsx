@@ -96,7 +96,7 @@ export default function LoginForm() {
               sx={{ width: { xs: 220, sm: 290 }, height: 'auto' }}
             />
 
-            <Stack direction="row" spacing={1.2} alignItems="center">
+            <Stack spacing={1} alignItems="flex-start" sx={{ maxWidth: 340 }}>
               <Box
                 component={motion.div}
                 initial={{ rotate: -14, scale: 0.9 }}
@@ -116,8 +116,18 @@ export default function LoginForm() {
               >
                 <TbShieldCheck size={20} />
               </Box>
-              <Typography sx={{ fontSize: '0.8rem', fontWeight: 800, color: PLUM, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
-                Shipping platform for ecommerce sellers
+              <Typography
+                sx={{
+                  fontSize: '0.8rem',
+                  fontWeight: 800,
+                  color: PLUM,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  lineHeight: 1.45,
+                  maxWidth: 280,
+                }}
+              >
+                Dispatch faster with one cleaner shipping control center
               </Typography>
             </Stack>
 

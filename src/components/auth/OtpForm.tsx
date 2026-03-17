@@ -74,8 +74,6 @@ export default function OtpForm({ email, onEditEmail }: Props) {
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    if (!import.meta.env.DEV) return
-
     const storedOtp = sessionStorage.getItem(DEV_OTP_KEY) || ''
     const storedEmail = sessionStorage.getItem(DEV_OTP_EMAIL_KEY) || ''
     const nextOtp = storedEmail === email.toLowerCase().trim() ? storedOtp : ''
@@ -191,7 +189,7 @@ export default function OtpForm({ email, onEditEmail }: Props) {
         setResendEnabled(false)
         setSecondsLeft(OTP_RESEND_DELAY_MS / 1000)
 
-        if (import.meta.env.DEV && typeof data?.otp === 'string') {
+        if (typeof data?.otp === 'string') {
           sessionStorage.setItem(DEV_OTP_KEY, data.otp)
           sessionStorage.setItem(DEV_OTP_EMAIL_KEY, email.toLowerCase().trim())
           setDevOtp(data.otp)
@@ -299,12 +297,12 @@ export default function OtpForm({ email, onEditEmail }: Props) {
       )}
 
       <Stack spacing={1.5}>
-        {import.meta.env.DEV && devOtp ? (
+        {devOtp ? (
           <Typography
             variant="caption"
             sx={{ textAlign: 'center', fontWeight: 700, color: DE_BLUE }}
           >
-            Dev OTP: {devOtp}
+            Verification code: {devOtp}
           </Typography>
         ) : null}
 
