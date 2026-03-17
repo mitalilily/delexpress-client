@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client'
 
-const SOCKET_URL = import.meta.env.VITE_APP_SOCKET_URL
+const SOCKET_URL = import.meta.env.VITE_APP_SOCKET_URL || 'https://delexpress-backend.onrender.com'
 const socket = io(SOCKET_URL!, { transports: ['websocket', 'polling'] })
 
 let pingInterval: number | null = null
