@@ -23,7 +23,7 @@ interface DropdownItem {
 
 interface DropdownMenuProps {
   label: string
-  items: DropdownItem[]
+  items?: DropdownItem[]
   onSelect: (key: string | boolean) => void
   value?: string | boolean
   width?: number | string
@@ -39,7 +39,7 @@ interface DropdownMenuProps {
 
 export default function CustomSelect({
   label,
-  items,
+  items = [],
   onSelect,
   value,
   placeholder,
@@ -49,11 +49,12 @@ export default function CustomSelect({
   error,
   searchable = true,
 }: DropdownMenuProps) {
+  const safeItems = Array.isArray(items) ? items : []
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
 
-  const selectedItem = items.find((item) => item?.key === value)
+  const selectedItem = safeItems.find((item) => item?.key === value)
 
   const handleToggle = () => {
     setOpen((prev) => !prev)
@@ -78,13 +79,13 @@ export default function CustomSelect({
 
   // 🔍 Filter items
   const filteredItems = useMemo(() => {
-    if (!searchable || !search) return items
-    return items.filter(
+    if (!searchable || !search) return safeItems
+    return safeItems.filter(
       (item) =>
         item.label.toLowerCase().includes(search.toLowerCase()) ||
         item.description?.toLowerCase().includes(search.toLowerCase()),
     )
-  }, [items, search, searchable])
+  }, [safeItems, search, searchable])
 
   return (
     <Box>
