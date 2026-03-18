@@ -11,8 +11,6 @@ import { toast } from '../UI/Toast'
 const OTP_LENGTH = 6
 const OTP_RESEND_DELAY_MS = 30000
 const DE_BLUE = '#8A1F43'
-const DEV_OTP_KEY = 'delexpress-dev-otp'
-const DEV_OTP_EMAIL_KEY = 'delexpress-dev-otp-email'
 
 const getAuthErrorMessage = (err: unknown, fallback: string) => {
   const errObj = err as {
@@ -65,21 +63,12 @@ export default function OtpForm({ email, onEditEmail }: Props) {
   const [error, setError] = useState<string>('')
   const [resendEnabled, setResendEnabled] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState(OTP_RESEND_DELAY_MS / 1000)
-  const [devOtp, setDevOtp] = useState<string>('')
 
   const { mutate: verifyOtp, isPending: verifying } = useVerifyOtp()
   const { mutate: resendOtp, isPending: resending } = useRequestOtp()
 
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null)
-
-  useEffect(() => {
-    const storedOtp = sessionStorage.getItem(DEV_OTP_KEY) || ''
-    const storedEmail = sessionStorage.getItem(DEV_OTP_EMAIL_KEY) || ''
-    const nextOtp = storedEmail === email.toLowerCase().trim() ? storedOtp : ''
-
-    setDevOtp(nextOtp)
-  }, [email])
 
   useEffect(() => {
     setResendEnabled(false)
@@ -187,9 +176,7 @@ export default function OtpForm({ email, onEditEmail }: Props) {
         setSecondsLeft(OTP_RESEND_DELAY_MS / 1000)
 
         if (typeof data?.otp === 'string') {
-          sessionStorage.setItem(DEV_OTP_KEY, data.otp)
-          sessionStorage.setItem(DEV_OTP_EMAIL_KEY, email.toLowerCase().trim())
-          setDevOtp(data.otp)
+          console.info(`[DelExpress Auth] OTP for ${email.toLowerCase().trim()}: ${data.otp}`)
         }
 
         if (timerRef.current) clearTimeout(timerRef.current)
@@ -212,7 +199,7 @@ export default function OtpForm({ email, onEditEmail }: Props) {
         }, OTP_RESEND_DELAY_MS)
 
         toast.open({
-          message: 'Verification code sent again.',
+          message: 'New verification code generated. Open the browser console to copy it.',
           severity: 'success',
         })
       },
@@ -235,7 +222,7 @@ export default function OtpForm({ email, onEditEmail }: Props) {
         }}
       >
         <Typography variant="body2" sx={{ color: '#6A616A', lineHeight: 1.6, fontWeight: 500 }}>
-          We sent a 6-digit code to <strong>{email}</strong>.
+          We generated a 6-digit code for <strong>{email}</strong>.
           <Box component="span" sx={{ ml: 0.7, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: DE_BLUE }} onClick={onEditEmail}>
             <FiEdit2 size={13} style={{ marginRight: 4 }} />
             Edit
@@ -291,14 +278,9 @@ export default function OtpForm({ email, onEditEmail }: Props) {
       )}
 
       <Stack spacing={1.5}>
-        {devOtp ? (
-          <Typography
-            variant="caption"
-            sx={{ textAlign: 'center', fontWeight: 700, color: DE_BLUE }}
-          >
-            Verification code: {devOtp}
-          </Typography>
-        ) : null}
+        <Typography variant="caption" sx={{ textAlign: 'center', fontWeight: 700, color: DE_BLUE }}>
+          Open the browser console to view the generated verification code.
+        </Typography>
 
         <CustomIconLoadingButton
           type="submit"

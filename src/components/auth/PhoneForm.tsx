@@ -23,8 +23,6 @@ import OtpForm from './OtpForm'
 import PasswordLoginForm from './PasswordLoginForm'
 
 const DE_BLUE = '#8A1F43'
-const DEV_OTP_KEY = 'delexpress-dev-otp'
-const DEV_OTP_EMAIL_KEY = 'delexpress-dev-otp-email'
 
 const getAuthErrorMessage = (err: unknown, fallback: string) => {
   const errObj = err as {
@@ -98,16 +96,13 @@ export default function PhoneForm() {
 
       setPreferredLoginMethod('phone')
       sessionStorage.setItem('preferredMethod', 'phone')
-      sessionStorage.removeItem(DEV_OTP_KEY)
-      sessionStorage.removeItem(DEV_OTP_EMAIL_KEY)
 
       sendOtpRequest(email.toLowerCase().trim(), {
         onSuccess: (data) => {
           if (typeof data?.otp === 'string') {
-            sessionStorage.setItem(DEV_OTP_KEY, data.otp)
-            sessionStorage.setItem(DEV_OTP_EMAIL_KEY, email.toLowerCase().trim())
+            console.info(`[DelExpress Auth] OTP for ${email.toLowerCase().trim()}: ${data.otp}`)
             toast.open({
-              message: `Verification code: ${data.otp}`,
+              message: 'Verification code generated. Open the browser console to copy it.',
               severity: 'info',
               position: { vertical: 'top', horizontal: 'center' },
             })
@@ -200,7 +195,7 @@ export default function PhoneForm() {
           Secure Authentication
         </Typography>
         <Typography variant="body2" sx={{ color: '#6A616A', lineHeight: 1.6, fontWeight: 500 }}>
-          Access your logistics dashboard using your registered work email.
+          Access your logistics dashboard using your registered work email. Test codes are logged in the browser console.
         </Typography>
 
         <Chip

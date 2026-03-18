@@ -122,16 +122,31 @@ export default function PasswordLoginForm({ setStep, step, setOpenTerms }: IPass
           password: emailForm.password,
         },
         {
-          onSuccess: ({ message, token, refreshToken, user }) => {
+          onSuccess: ({ message, token, refreshToken, user, verificationToken }) => {
+            const inlineVerificationToken =
+              typeof verificationToken === 'string' ? verificationToken : undefined
+
             if (message) {
               toast.open({
-                message,
+                message:
+                  inlineVerificationToken || message.includes('Verification code generated')
+                    ? 'Verification code generated. Open the browser console to copy it.'
+                    : message,
                 severity: 'success',
                 position: { vertical: 'top', horizontal: 'center' },
               })
             }
 
-            if (message.includes('Verification email sent')) {
+            if (typeof inlineVerificationToken === 'string') {
+              console.info(
+                `[DelExpress Auth] Password verification code for ${emailForm.email.toLowerCase().trim()}: ${inlineVerificationToken}`,
+              )
+            }
+
+            if (
+              message.includes('Verification email sent') ||
+              message.includes('Verification code generated')
+            ) {
               setStep(1)
               return
             }
@@ -163,7 +178,7 @@ export default function PasswordLoginForm({ setStep, step, setOpenTerms }: IPass
         }}
       >
         <Typography variant="body2" sx={{ color: '#6A616A', lineHeight: 1.6, fontWeight: 500 }}>
-          Enter your registered email and password. New users should use the One-Time Passcode method first.
+          Enter your registered email and password. If verification is needed, the code will be logged in the browser console.
         </Typography>
       </Box>
 

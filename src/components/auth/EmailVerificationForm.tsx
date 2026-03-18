@@ -2,13 +2,14 @@ import { Box, Stack, Typography } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { useEffect, useState } from 'react'
 import { FiEdit2, FiMail } from 'react-icons/fi'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/auth/AuthContext'
 import { useVerifyEmailOtp } from '../../hooks/useRequestPasswordLogin'
 import CustomIconLoadingButton from '../UI/button/CustomLoadingButton'
 import CustomInput from '../UI/inputs/CustomInput'
 import { toast } from '../UI/Toast'
 
-const DE_BLUE = '#0052CC'
+const DE_BLUE = '#8A1F43'
 
 const primaryButtonStyles = {
   width: '100%',
@@ -40,6 +41,7 @@ export default function EmailVerificationForm({
   resendMail,
 }: IEmailVerificationProps) {
   const { setTokens, setUserId } = useAuth()
+  const navigate = useNavigate()
 
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
@@ -75,6 +77,7 @@ export default function EmailVerificationForm({
             message: 'Email verified successfully',
             severity: 'success',
           })
+          navigate('/onboarding-questions', { replace: true })
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onError: (err: any) => {
@@ -100,7 +103,7 @@ export default function EmailVerificationForm({
         }}
       >
         <Typography variant="body2" sx={{ color: '#42526E', lineHeight: 1.6, fontWeight: 500 }}>
-          Verification code sent to <strong>{email}</strong>.
+          Verification code generated for <strong>{email}</strong>. Open the browser console to copy it.
           <Box component="span" sx={{ ml: 0.7, display: 'inline-flex', alignItems: 'center', cursor: 'pointer', color: DE_BLUE }} onClick={onEditEmail}>
             <FiEdit2 size={13} style={{ marginRight: 4 }} />
             Edit
