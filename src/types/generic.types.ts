@@ -238,6 +238,7 @@ export interface B2BOrder {
   courier_partner?: string
   courier_id?: string | null
   shipment_id?: string
+  integration_type?: string | null
   awb_number?: string
   label?: string
   manifest?: string

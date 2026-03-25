@@ -16,6 +16,14 @@ import { useSyncShopifyOrders } from '../../hooks/useIntegrations'
 import { useAuth } from "../../context/auth/AuthContext";
 import { toast } from "../UI/Toast";
 
+const emptyShopifyDetails: ShopifyForm = {
+  storeUrl: '',
+  apiKey: '',
+  adminApiAccessToken: '',
+  webhookSecret: '',
+  name: '',
+}
+
 const UserConnectedChannels = () => {
   const { user: userData } = useAuth();
   const { mutate: deleteIntegration, isPending: deleting } =
@@ -31,7 +39,7 @@ const UserConnectedChannels = () => {
     channelId: string;
   }>({ channelId: "", platform: null });
 
-  const [details, setDetails] = useState<Partial<Stores & { webhookSecret: string }>>({});
+  const [details, setDetails] = useState<ShopifyForm>(emptyShopifyDetails);
 
   const columns: Column<Stores>[] = [
     {
@@ -69,7 +77,11 @@ const UserConnectedChannels = () => {
             onClick={() => {
               setSelectedStore({ channelId: value, platform: row?.platformId });
               setDetails({
-                ...row,
+                ...emptyShopifyDetails,
+                name: row.name ?? '',
+                domain: row.domain,
+                storeUrl: row.domain,
+                metadata: row.metadata,
                 webhookSecret:
                   row.webhookSecret ||
                   (row.metadata as { shopifyWebhookSecret?: string })?.shopifyWebhookSecret ||
@@ -101,9 +113,15 @@ const UserConnectedChannels = () => {
                       severity: 'success',
                     })
                   },
-                  onError: (error: { response?: { data?: { error?: string } } }) => {
+                  onError: (error) => {
+                    const syncError = error as Error & {
+                      response?: { data?: { error?: string } }
+                    }
                     toast.open({
-                      message: error?.response?.data?.error || 'Failed to sync Shopify orders',
+                      message:
+                        syncError?.response?.data?.error ||
+                        syncError?.message ||
+                        'Failed to sync Shopify orders',
                       severity: 'error',
                     })
                   },
@@ -132,13 +150,14 @@ const UserConnectedChannels = () => {
     integrateShopify(payload, {
       onSuccess: (data) => {
         toast.open({
-          message: data?.warning ? `${data?.message}. ${data.warning}` : data?.message,
-          severity: data?.warning ? "warning" : "success",
-        });
-        setSelectedStore({ channelId: "", platform: null });
-      },
-      onError: (error) => {
-        console.error("Error integrating Shopify store:", error);
+        message: data?.warning ? `${data?.message}. ${data.warning}` : data?.message,
+        severity: data?.warning ? "warning" : "success",
+      });
+      setSelectedStore({ channelId: "", platform: null });
+      setDetails(emptyShopifyDetails)
+    },
+    onError: (error) => {
+      console.error("Error integrating Shopify store:", error);
         toast.open({
           message: "Error integrating Shopify store",
           severity: "error",
@@ -157,6 +176,7 @@ const UserConnectedChannels = () => {
           severity: "success",
         });
         setSelectedStore({ channelId: "", platform: null });
+        setDetails(emptyShopifyDetails)
       },
       onError: (error) => {
         console.error("Delete error:", error);
@@ -189,9 +209,12 @@ const UserConnectedChannels = () => {
           handleConnect={handleUpdateShopify}
           isEditing={selectedStore?.platform ? true : false}
           setShopifyDetails={setDetails}
-          shopifyDetails={details as ShopifyForm}
+          shopifyDetails={details}
           openModal={selectedStore?.platform ? true : false}
-          onSetOpen={() => setSelectedStore({ channelId: "", platform: null })}
+          onSetOpen={() => {
+            setSelectedStore({ channelId: "", platform: null })
+            setDetails(emptyShopifyDetails)
+          }}
         />
       )}
 

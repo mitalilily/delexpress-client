@@ -7,6 +7,14 @@ const DE_BLUE = '#0052CC'
 const TEXT_PRIMARY = '#172B4D'
 const TEXT_SECONDARY = '#42526E'
 
+const toChipStatus = (status?: string | null) => {
+  const normalized = String(status || '').toLowerCase()
+  if (normalized.includes('deliver')) return 'success'
+  if (normalized.includes('cancel') || normalized.includes('fail')) return 'error'
+  if (normalized) return 'info'
+  return 'pending'
+}
+
 type UpcomingPickupsHomeProps = {
   data?: Pickup[]
   isLoading?: boolean
@@ -116,7 +124,7 @@ const UpcomingPickupsHome = ({ data: overrideData, isLoading: overrideLoading, e
                       <Typography sx={{ fontSize: '0.92rem', fontWeight: 800, color: TEXT_PRIMARY }}>
                         {warehouseName}
                       </Typography>
-                      <StatusChip status={pickup.status} />
+                      <StatusChip status={toChipStatus(pickup.status)} />
                     </Stack>
                     <Stack direction="row" spacing={0.8} alignItems="center" color={TEXT_SECONDARY}>
                       <MdLocationPin size={14} color={DE_BLUE} />

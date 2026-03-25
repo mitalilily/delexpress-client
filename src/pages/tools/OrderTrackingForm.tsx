@@ -41,6 +41,9 @@ type FormValues = {
   contact: string
 }
 
+const getEventTimestamp = (event: TrackingHistory) =>
+  event.event_time ? new Date(event.event_time).getTime() : 0
+
 export default function OrderTrackingForm() {
   const [mode, setMode] = useState<'awb' | 'order'>('awb')
   const [error, setError] = useState<string>('')
@@ -115,9 +118,7 @@ export default function OrderTrackingForm() {
 
   const sortedHistory = useMemo<TrackingHistory[]>(() => {
     if (!tracking?.history) return []
-    return [...tracking.history].sort(
-      (a, b) => new Date(b.event_time).getTime() - new Date(a.event_time).getTime(),
-    )
+    return [...tracking.history].sort((a, b) => getEventTimestamp(b) - getEventTimestamp(a))
   }, [tracking])
 
   const resetResults = () => {
@@ -330,7 +331,7 @@ export default function OrderTrackingForm() {
               ) : (
                 <List>
                   {sortedHistory.map((event, idx) => (
-                    <Fragment key={`${event.event_time}-${idx}`}>
+                    <Fragment key={`${event.event_time ?? event.status_code}-${idx}`}>
                       <ListItem alignItems="flex-start" sx={{ px: 0 }}>
                         <ListItemIcon sx={{ minWidth: 36 }}>
                           {idx === 0 ? (
@@ -362,7 +363,9 @@ export default function OrderTrackingForm() {
                               <Stack direction="row" spacing={0.5} alignItems="center">
                                 <MdSchedule size={16} />
                                 <Typography variant="caption">
-                                  {new Date(event.event_time).toLocaleString()}
+                                  {event.event_time
+                                    ? new Date(event.event_time).toLocaleString()
+                                    : 'Timestamp unavailable'}
                                 </Typography>
                               </Stack>
                               {event.location && (

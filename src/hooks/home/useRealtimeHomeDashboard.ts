@@ -10,6 +10,11 @@ import {
 } from '../../api/dashboard.api'
 
 type DashboardKey = 'pickups' | 'distribution' | 'destinations'
+type DashboardDataMap = {
+  pickups: Pickup[]
+  distribution: CourierDistribution[]
+  destinations: TopDestination[]
+}
 
 interface DataState<T> {
   data: T
@@ -34,6 +39,10 @@ const shouldShowLoading = (currentData: unknown) => {
 type PollConfig<T> = {
   setter: Dispatch<SetStateAction<DataState<T>>>
   fetcher: (signal: AbortSignal) => Promise<T>
+}
+
+type PollConfigMap = {
+  [K in DashboardKey]: PollConfig<DashboardDataMap[K]>
 }
 
 export const useRealtimeHomeDashboard = () => {
@@ -75,7 +84,7 @@ export const useRealtimeHomeDashboard = () => {
     destinations: false,
   })
 
-  const fetchMap = useMemo<Record<DashboardKey, PollConfig<Pickup[] | CourierDistribution[] | TopDestination[]>>>(() => {
+  const fetchMap = useMemo<PollConfigMap>(() => {
     return {
       pickups: {
         setter: setPickupsState,
@@ -92,16 +101,20 @@ export const useRealtimeHomeDashboard = () => {
     }
   }, [setPickupsState, setDistributionState, setDestinationsState])
 
+  const getPollConfig = useCallback(function <K extends DashboardKey>(key: K): PollConfig<DashboardDataMap[K]> {
+    return fetchMap[key]
+  }, [fetchMap])
+
   const runFetch = useCallback(
-    async (key: DashboardKey) => {
+    async function <K extends DashboardKey>(key: K) {
       if (isFetchingRef.current[key]) return
       isFetchingRef.current[key] = true
       const controller = new AbortController()
       controllersRef.current[key]?.abort()
       controllersRef.current[key] = controller
 
-      const { setter, fetcher } = fetchMap[key]
-      setter((prev) => ({
+      const { setter, fetcher } = getPollConfig(key)
+      setter((prev: DataState<DashboardDataMap[K]>) => ({
         ...prev,
         isLoading: shouldShowLoading(prev.data),
       }))
@@ -121,7 +134,7 @@ export const useRealtimeHomeDashboard = () => {
           err instanceof Error
             ? err.message
             : `Unable to refresh ${key}`
-        setter((prev) => ({
+        setter((prev: DataState<DashboardDataMap[K]>) => ({
           ...prev,
           isLoading: shouldShowLoading(prev.data),
           error: message,
@@ -130,7 +143,7 @@ export const useRealtimeHomeDashboard = () => {
         isFetchingRef.current[key] = false
       }
     },
-    [fetchMap],
+    [getPollConfig],
   )
 
   const clearStaggeredTimers = useCallback(() => {

@@ -28,7 +28,8 @@ const GettingStarted = () => {
   const isKycDone = user?.domesticKyc?.status === 'verified'
   const progress = isKycDone ? 100 : 55
 
-  return (    <Stack gap={2}>
+  return (
+    <Stack gap={2}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={1}>
         <Typography sx={{ fontSize: '1.05rem', fontWeight: 800, color: TEXT_PRIMARY }}>Getting Started</Typography>
         <Typography sx={{ fontSize: '12px', color: TEXT_SECONDARY, fontWeight: 700 }}>
@@ -37,7 +38,7 @@ const GettingStarted = () => {
       </Stack>
 
       <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Box sx={cardSx}>
             <Stack spacing={1.2}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -75,7 +76,7 @@ const GettingStarted = () => {
           </Box>
         </Grid>
 
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <Box sx={cardSx}>
             <Stack spacing={1.2}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">

@@ -38,6 +38,10 @@ const UserMenu = () => {
   const navigate = useNavigate()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
+  const displayName =
+    user?.companyInfo?.contactPerson || user?.companyInfo?.businessName || 'DelExpress User'
+  const displayEmail =
+    user?.companyInfo?.contactEmail || user?.companyInfo?.companyEmail || ''
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -131,7 +135,7 @@ const UserMenu = () => {
             borderRadius: 1,
           }}
         >
-          {getInitials(user?.companyInfo?.contactPerson || user?.name)}
+          {getInitials(displayName)}
         </Avatar>
       </IconButton>
 
@@ -166,14 +170,14 @@ const UserMenu = () => {
                 fontWeight: 800,
               }}
             >
-              {getInitials(user?.companyInfo?.contactPerson || user?.name)}
+              {getInitials(displayName)}
             </Avatar>
             <Box sx={{ minWidth: 0 }}>
               <Typography variant="subtitle1" fontWeight={800} noWrap color={TEXT_PRIMARY}>
-                {user?.companyInfo?.contactPerson || user?.name || 'DelExpress User'}
+                {displayName}
               </Typography>
               <Typography variant="body2" color="text.secondary" noWrap sx={{ fontSize: '12px', fontWeight: 500 }}>
-                {user?.companyInfo?.contactEmail || user?.email}
+                {displayEmail}
               </Typography>
             </Box>
           </Stack>

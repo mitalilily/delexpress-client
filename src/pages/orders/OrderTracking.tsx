@@ -210,7 +210,7 @@ export default function TrackingPage() {
 
         <Grid container spacing={4}>
           {/* Tracking Journey */}
-          <Grid item xs={12} lg={8}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             <Paper
               elevation={0}
               sx={{
@@ -290,10 +290,23 @@ export default function TrackingPage() {
                   <Stack key={i} direction="row" spacing={3}>
                     <Box sx={{ minWidth: 90, pt: 0.5 }}>
                       <Typography variant="body2" sx={{ fontWeight: 800, color: '#172B4D' }}>
-                        {event.date}
+                        {event.date ||
+                          (event.event_time
+                            ? new Date(event.event_time).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                              })
+                            : '—')}
                       </Typography>
                       <Typography variant="caption" sx={{ color: '#6B778C' }}>
-                        {event.time}
+                        {event.time ||
+                          (event.event_time
+                            ? new Date(event.event_time).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })
+                            : '—')}
                       </Typography>
                     </Box>
                     <Box sx={{ position: 'relative' }}>
@@ -322,7 +335,7 @@ export default function TrackingPage() {
                     </Box>
                     <Box sx={{ pb: 3 }}>
                       <Typography variant="body2" sx={{ fontWeight: 800, color: '#172B4D' }}>
-                        {event.activity}
+                        {event.activity || event.message || statusLabels[event.status_code] || 'Shipment update'}
                       </Typography>
                       <Typography variant="caption" sx={{ color: '#42526E', display: 'block', mt: 0.5 }}>
                         Location: {event.location}
@@ -335,7 +348,7 @@ export default function TrackingPage() {
           </Grid>
 
           {/* Shipment Details */}
-          <Grid item xs={12} lg={4}>
+          <Grid size={{ xs: 12, lg: 4 }}>
             <Stack spacing={4}>
               <Paper
                 elevation={0}

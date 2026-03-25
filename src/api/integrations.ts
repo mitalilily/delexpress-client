@@ -9,6 +9,7 @@ export interface Stores {
   name: string | null;
   userId: string;
   domain: string;
+  webhookSecret?: string | null;
   platformId: number;
   timezone: string | null;
   country: string | null;
