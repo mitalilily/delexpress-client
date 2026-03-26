@@ -5,6 +5,7 @@ import { useState, type Dispatch, type SetStateAction } from 'react'
 import { FiMail, FiShield } from 'react-icons/fi'
 import { MdInfoOutline, MdPassword } from 'react-icons/md'
 import { useNavigate } from 'react-router-dom'
+import { getApiErrorMessage } from '../../api/apiRuntime'
 import { useAuth } from '../../context/auth/AuthContext'
 import { useRequestPasswordLogin } from '../../hooks/useRequestPasswordLogin'
 import CustomIconLoadingButton from '../UI/button/CustomLoadingButton'
@@ -159,7 +160,7 @@ export default function PasswordLoginForm({ setStep, step, setOpenTerms }: IPass
           },
           onError: (error: any) => {
             toast.open({
-              message: error?.response?.data?.error || 'Something went wrong',
+              message: getApiErrorMessage(error, 'Something went wrong'),
               severity: 'error',
               position: { vertical: 'top', horizontal: 'center' },
             })

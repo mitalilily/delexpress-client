@@ -1,38 +1,15 @@
 // src/api/axiosInstance.ts
 import axios from 'axios'
+import {
+  API_BASE_URL,
+  isNetworkLikeApiError,
+  wakeBackendIfNeeded,
+} from './apiRuntime'
 import { clearAuthTokens, getAuthTokens, setAuthTokens } from './tokenVault'
-
-const RAW_API_BASE_URL = import.meta.env.VITE_API_URL
-const DEFAULT_API_BASE_URL = 'https://delexpress-backend.onrender.com/api'
-
-const getApiBaseUrl = () => {
-  const fallback = DEFAULT_API_BASE_URL.replace(/\/+$/, '')
-
-  try {
-    if (!RAW_API_BASE_URL) return fallback
-
-    const candidate = new URL(RAW_API_BASE_URL, window.location.origin)
-    const currentHost = window.location.hostname
-    const isNetlifyHost = currentHost.endsWith('netlify.app')
-    const pointsBackToFrontend = candidate.hostname === currentHost
-
-    if (isNetlifyHost && pointsBackToFrontend) {
-      return fallback
-    }
-
-    const normalized = candidate.href.replace(/\/+$/, '')
-    if (normalized.endsWith('/api') || normalized.includes('/api/')) return normalized
-    return `${normalized}/api`
-  } catch {
-    return fallback
-  }
-}
-
-const API_BASE_URL = getApiBaseUrl()
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })
 
@@ -47,7 +24,13 @@ api.interceptors.request.use((cfg) => {
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
-    const original = err.config
+    const original = err.config || {}
+
+    if (isNetworkLikeApiError(err) && !original._backendWakeRetried) {
+      original._backendWakeRetried = true
+      await wakeBackendIfNeeded()
+      return api(original)
+    }
 
     // Skip refresh if:
     // 1. Not a 401 error

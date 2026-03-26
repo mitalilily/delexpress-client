@@ -3,6 +3,7 @@ import { alpha } from '@mui/material/styles'
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { FiEdit2, FiRefreshCcw } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
+import { getApiErrorMessage } from '../../api/apiRuntime'
 import { useAuth } from '../../context/auth/AuthContext'
 import { useRequestOtp, useVerifyOtp } from '../../hooks/useOTP'
 import CustomIconLoadingButton from '../UI/button/CustomLoadingButton'
@@ -11,29 +12,6 @@ import { toast } from '../UI/Toast'
 const OTP_LENGTH = 6
 const OTP_RESEND_DELAY_MS = 30000
 const DE_BLUE = '#8A1F43'
-
-const getAuthErrorMessage = (err: unknown, fallback: string) => {
-  const errObj = err as {
-    response?: { data?: Record<string, unknown> }
-    code?: string
-    message?: string
-  }
-
-  const data = errObj.response?.data
-  const fromData =
-    (typeof data?.error === 'string' && data.error) ||
-    (typeof data?.message === 'string' && data.message) ||
-    (typeof data?.msg === 'string' && data.msg) ||
-    ''
-
-  const message = fromData || errObj.message || fallback
-
-  const isNetwork = errObj.code === 'ERR_NETWORK' || !errObj.response
-  if (!isNetwork) return message
-
-  const base = import.meta.env.VITE_API_URL || 'https://delexpress-backend.onrender.com/api'
-  return `Cannot reach API (${base}). Start backend or set VITE_API_URL.`
-}
 
 const primaryButtonStyles = {
   width: '100%',
@@ -151,7 +129,7 @@ export default function OtpForm({ email, inlineOtp = '', onEditEmail }: Props) {
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onError: (err: any) => {
-          const msg = getAuthErrorMessage(err, 'OTP verification failed')
+          const msg = getApiErrorMessage(err, 'OTP verification failed')
           setError(msg)
 
           if (msg.toLowerCase().includes('otp expired')) {
@@ -213,7 +191,7 @@ export default function OtpForm({ email, inlineOtp = '', onEditEmail }: Props) {
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onError: (err: any) => {
-        const msg = getAuthErrorMessage(err, 'Failed to resend OTP')
+        const msg = getApiErrorMessage(err, 'Failed to resend OTP')
         setError(msg)
       },
     })

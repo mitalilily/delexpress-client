@@ -11,6 +11,7 @@ import {
 import { alpha } from '@mui/material/styles'
 import { useCallback, useEffect, useState } from 'react'
 import { FiMail, FiShield } from 'react-icons/fi'
+import { getApiErrorMessage } from '../../api/apiRuntime'
 import { useRequestOtp } from '../../hooks/useOTP'
 import { TERMS_AND_CONDITIONS } from '../../utils/constants'
 import { TEXT } from '../../theme/theme'
@@ -23,29 +24,6 @@ import OtpForm from './OtpForm'
 import PasswordLoginForm from './PasswordLoginForm'
 
 const DE_BLUE = '#8A1F43'
-
-const getAuthErrorMessage = (err: unknown, fallback: string) => {
-  const errObj = err as {
-    response?: { data?: Record<string, unknown> }
-    code?: string
-    message?: string
-  }
-
-  const data = errObj.response?.data
-  const fromData =
-    (typeof data?.error === 'string' && data.error) ||
-    (typeof data?.message === 'string' && data.message) ||
-    (typeof data?.msg === 'string' && data.msg) ||
-    ''
-
-  const message = fromData || errObj.message || fallback
-
-  const isNetwork = errObj.code === 'ERR_NETWORK' || !errObj.response
-  if (!isNetwork) return message
-
-  const base = import.meta.env.VITE_API_URL || 'https://delexpress-backend.onrender.com/api'
-  return `Cannot reach API (${base}). Start backend or set VITE_API_URL.`
-}
 
 const primaryButtonStyles = {
   width: '100%',
@@ -115,7 +93,7 @@ export default function PhoneForm() {
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onError: (err: any) => {
-          const msg = getAuthErrorMessage(err, 'OTP request failed')
+          const msg = getApiErrorMessage(err, 'OTP request failed')
           toast.open({
             message: msg,
             severity: 'error',
